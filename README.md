@@ -67,6 +67,19 @@ the rest. Its installed extensions keep their tiers until a later fetch reaches 
   extensions on every pull request, `release.yaml` publishes on every merge that changes an
   extension.
 
+## Skills for Claude Code
+
+`.claude/skills/` has three, picked up by Claude Code in a clone of this repo:
+
+- `new-extension`: builds one from a description, with its tests and PRIVACY.md
+  entry. Its `references/extension-spec.md` is the manifest, environment,
+  document and limits from stack-nudge's docs in one place.
+- `try-extension`: runs one the way the app does
+  (`scripts/run_like_host.py`) and checks what it prints against the app's
+  rules, then optionally installs it to see it in the panel.
+- `review-extension`: goes through the review list in CONTRIBUTING.md against
+  a change and reports what it finds.
+
 ## What you need
 
 - python3, for the extensions and their tests
