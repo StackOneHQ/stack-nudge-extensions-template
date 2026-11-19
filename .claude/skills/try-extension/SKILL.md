@@ -9,6 +9,15 @@ The tests check the logic. This checks what the app would actually get: the same
 environment, working directory, time limit and output limit, and a document the
 host will draw as meant.
 
+## Before running anything
+
+This runs the extension's real code, as the user. It reads what the extension
+reads and sends what it sends, so an extension that calls a service, reads the
+Keychain or posts the user's data will do that for real, with their real
+credentials if it finds them. Read `run` first. If it talks to anything outside
+its own directory, ask the user before running it, and say what it will touch;
+otherwise rely on its tests, which fake all of that.
+
 ## 1. Run it like the host
 
 ```bash
