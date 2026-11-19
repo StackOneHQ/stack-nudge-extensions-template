@@ -47,9 +47,10 @@ publish some other way.
   the installed one. New files under an old version never reach anyone who has it, which is
   why the version check fails a change that doesn't bump it.
 - **Tiers** come from `extensions/tiers.json`, the reviewers' file, through the index. What
-  stack-nudge actually grants is capped by who owns the repo, in stack-nudge itself: a
-  StackOneHQ repo can grant up to `trusted`, any other repo is held to `view`. Anything not
-  in `tiers.json` is `view`.
+  stack-nudge actually grants is capped by a list of catalogues compiled into the app: those
+  can grant up to `trusted`, and every other repo is held to `view`, other StackOneHQ repos
+  included. Adding a catalogue to that list is a change to stack-nudge. Anything not in
+  `tiers.json` is `view`.
 
 If a repo can't be read, stack-nudge names it in the browser with the reason and still loads
 the rest. Its installed extensions keep their tiers until a later fetch reaches every repo.
