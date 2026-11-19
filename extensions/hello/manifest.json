@@ -1,0 +1,27 @@
+{
+  "id": "hello",
+  "name": "Hello",
+  "description": "The template's example: a greeting, and a count of how often you've pressed G.",
+  "version": "0.1.0",
+  "schema": 1,
+  "tab": {
+    "label": "Hello"
+  },
+  "run": "./run",
+  "requires": [
+    "python3"
+  ],
+  "config": [
+    {
+      "key": "STACKNUDGE_EXT_HELLO_NAME",
+      "label": "Your name",
+      "help": "Who the tab greets. Leave it blank for \"there\".",
+      "placeholder": "Ada"
+    }
+  ],
+  "refresh": {
+    "onOpen": true,
+    "intervalSeconds": 300,
+    "whileFocusedOnly": true
+  }
+}

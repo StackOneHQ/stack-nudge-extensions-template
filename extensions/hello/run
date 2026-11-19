@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""The template's example extension: a greeting row, and a count of how often
+G has been pressed.
+
+It's here to be copied, so it shows the parts every extension has and nothing
+else: a config key from the manifest, the document it prints, an action, and
+state kept under its own directory because the host runs it fresh each time.
+It reads nothing else on the Mac and sends nothing anywhere.
+
+stack-nudge's docs/extensions.md is the spec for the manifest and the document.
+"""
+
+import json
+import os
+import sys
+
+SCHEMA = 1
+NAME_KEY = "STACKNUDGE_EXT_HELLO_NAME"
+STATE_FILE = "state.json"
+
+
+def read_count(path):
+    try:
+        with open(path, encoding="utf-8") as handle:
+            count = json.load(handle).get("greeted", 0)
+    except (OSError, ValueError, AttributeError):
+        return 0
+    return count if isinstance(count, int) and count >= 0 else 0
+
+
+def write_count(path, count):
+    # Written beside and renamed over, so a run the host stops halfway never
+    # leaves half a file to read next time.
+    temporary = path + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as handle:
+        json.dump({"greeted": count}, handle)
+    os.replace(temporary, path)
+
+
+def action_of(argv):
+    if len(argv) >= 3 and argv[1] == "--action":
+        return argv[2]
+    return None
+
+
+def document(name, count):
+    who = name.strip() or "there"
+    times = "once" if count == 1 else "%d times" % count
+    header = {"title": "Hello"}
+    if count:
+        header["trailing"] = times
+    return {
+        "schema": SCHEMA,
+        "state": "ok",
+        "header": header,
+        "rows": [
+            {
+                "id": "greeting",
+                "title": "Hello, %s" % who,
+                "subtitle": "Set your name in Settings, Extensions, Hello",
+                "value": str(count),
+                "footnote": "greeted %s" % times if count else "press G to greet",
+            }
+        ],
+        "actions": [{"id": "greet", "label": "Greet", "key": "g"}],
+    }
+
+
+def main(argv, environ, state_path=STATE_FILE):
+    host_schema = environ.get("STACKNUDGE_EXT_SCHEMA", str(SCHEMA))
+    if not host_schema.isdigit() or int(host_schema) < SCHEMA:
+        return {"schema": SCHEMA, "state": "error",
+                "message": "This stack-nudge is too old for Hello; update it."}
+    count = read_count(state_path)
+    if action_of(argv) == "greet":
+        count += 1
+        write_count(state_path, count)
+    return document(environ.get(NAME_KEY, ""), count)
+
+
+if __name__ == "__main__":
+    print(json.dumps(main(sys.argv, os.environ)))

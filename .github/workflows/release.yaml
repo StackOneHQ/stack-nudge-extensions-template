@@ -1,0 +1,70 @@
+name: release
+
+# Publishes every extension on main as a GitHub release: one tarball and .sha256 per extension,
+# plus extensions-index.json. stack-nudge reads the index from the newest release, the same layout
+# its own release uses, so it has to stay "latest". The runner's own python3 runs the tests.
+#
+# Never in the template itself. It belongs to StackOneHQ, and stack-nudge lets a StackOneHQ repo's
+# index grant tiers up to trusted, so a published example would be a live catalogue nobody reviews
+# as one. A repository made from the template isn't a template, so its releases run.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "extensions/**"
+      - "scripts/package-extensions.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  extensions:
+    name: Package and publish extensions
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # This job uploads and never pushes, and what runs here is driven by merged
+          # manifests, so no write token is left in .git/config.
+          persist-credentials: false
+      # A catalogue with no extensions yet publishes nothing, rather than an empty index that
+      # stack-nudge would read as every extension gone.
+      - name: Anything to publish
+        id: any
+        run: |
+          if compgen -G 'extensions/*/manifest.json' >/dev/null; then
+            echo "publish=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "No extensions yet, so no release."
+          fi
+      - name: Test extensions
+        if: steps.any.outputs.publish == 'true'
+        run: ./scripts/test-extensions.sh
+      - name: Package
+        if: steps.any.outputs.publish == 'true'
+        run: ./scripts/package-extensions.sh package dist/extensions
+      - name: Publish
+        if: steps.any.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: extensions-${{ github.run_number }}
+        run: |
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Extensions ${{ github.run_number }}" \
+            --notes "Extensions as of ${GITHUB_SHA::7}. See each extension's manifest.json for its version." \
+            --latest \
+            dist/extensions/extensions-index.json \
+            dist/extensions/*.tar.gz \
+            dist/extensions/*.tar.gz.sha256

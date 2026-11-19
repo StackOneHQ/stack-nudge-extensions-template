@@ -1,0 +1,21 @@
+{
+    "name": "stack-nudge-extensions-template",
+    "private": true,
+    "packageManager": "pnpm@11.17.0",
+    "engines": {
+        "node": ">=22.23.4"
+    },
+    "volta": {
+        "node": "22.23.4"
+    },
+    "scripts": {
+        "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
+        "check": "scripts/check.sh",
+        "lint": "biome ci ."
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.5.15",
+        "@stackone/biome-config": "1.0.1",
+        "vitest": "5.0.5"
+    }
+}

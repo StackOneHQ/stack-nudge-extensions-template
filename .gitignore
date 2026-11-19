@@ -1,0 +1,7 @@
+node_modules/
+*.log
+dist/
+__pycache__/
+extensions/*/state.json
+extensions/*/state.json.tmp
+.DS_Store

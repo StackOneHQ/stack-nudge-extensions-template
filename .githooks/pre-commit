@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Formats what a commit stages with the workspace's Biome (biome.jsonc's config), and stages it
+# again, so an unformatted file never reaches a pull request. Turned on by `pnpm install` (the root
+# package.json's prepare sets core.hooksPath to .githooks); worktrees share that setting. Adapted
+# from agent-control's, which also formats Rust.
+#
+# A file outside Biome's includes is left alone. A file that also has unstaged changes is only
+# checked: staging it again would sweep those changes into the commit, so when its staged form
+# isn't formatted the commit fails with the command to run.
+set -euo pipefail
+
+STAGED="$(git diff --cached --name-only --diff-filter=ACMR -- \
+  '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.mjs' '*.cjs' '*.json' '*.jsonc' '*.css' '*.html')"
+[[ -n "$STAGED" ]] || exit 0
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+BIOME="$ROOT/node_modules/.bin/biome"
+if [[ ! -x "$BIOME" ]]; then
+  echo "pre-commit: staged TypeScript, JavaScript, JSON or CSS needs Biome, which pnpm install puts in node_modules" >&2
+  exit 1
+fi
+
+whole=()
+unformatted=()
+while IFS= read -r file; do
+  [[ -n "$file" ]] || continue
+  if [[ -z "$(git diff --name-only -- "$file")" ]]; then
+    whole+=("$file")
+    continue
+  fi
+  # Biome formats whatever it's handed on stdin, includes or not, so ask first whether the path is
+  # one it covers: a dry run over a path outside the includes checks nothing.
+  covered="$("$BIOME" format --no-errors-on-unmatched --files-ignore-unknown=true --reporter=summary "$file" 2>&1 || true)"
+  [[ "$covered" != *"Checked 0 files"* ]] || continue
+  staged="$(git show ":$file")"
+  if ! formatted="$(printf '%s\n' "$staged" | "$BIOME" format --stdin-file-path="$file" 2>/dev/null)" ||
+    [[ "$formatted" != "$staged" ]]; then
+    unformatted+=("$file")
+  fi
+done <<<"$STAGED"
+
+if ((${#whole[@]} > 0)); then
+  before=()
+  for file in "${whole[@]}"; do
+    before+=("$(git hash-object -- "$file")")
+  done
+  if ! "$BIOME" format --write --no-errors-on-unmatched --files-ignore-unknown=true "${whole[@]}" >/dev/null; then
+    echo "pre-commit: Biome could not format a staged file; run $BIOME format on it to see why, and commit again" >&2
+    exit 1
+  fi
+  for index in "${!whole[@]}"; do
+    file="${whole[$index]}"
+    if [[ "$(git hash-object -- "$file")" != "${before[$index]}" ]]; then
+      git add -- "$file"
+      echo "pre-commit: formatted $file"
+    fi
+  done
+fi
+
+if ((${#unformatted[@]} > 0)); then
+  echo "pre-commit: these have unstaged changes too, so they weren't formatted for you, and their staged form isn't formatted:" >&2
+  printf '  %s\n' "${unformatted[@]}" >&2
+  echo "Format them, stage what you mean to commit, and commit again:" >&2
+  printf '  %s format --write' "$BIOME" >&2
+  printf ' %q' "${unformatted[@]}" >&2
+  printf '\n' >&2
+  exit 1
+fi

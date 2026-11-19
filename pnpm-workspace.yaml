@@ -1,0 +1,9 @@
+# No workspace members: the only packages are the extensions, which are Python and packaged by
+# scripts/package-extensions.sh, never installed with pnpm. This file holds pnpm's settings.
+
+# Supply-chain hardening, as StackOne's other repos have it: only install versions published at
+# least 7 days ago (minutes). The first-party scopes are exempt.
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - '@stackone/*'
+  - '@stackonehq/*'

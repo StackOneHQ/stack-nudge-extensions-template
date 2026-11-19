@@ -1,0 +1,33 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+    "extends": ["@stackone/biome-config"],
+    "files": {
+        // The scripts and the configs. extensions/ is Python, and its manifests keep the two-space
+        // layout stack-nudge's own use, so they stay outside.
+        "includes": ["scripts/**/*.mjs", "*.json", "*.jsonc", "*.mjs", "!**/node_modules"]
+    },
+    "linter": {
+        "rules": {
+            // The shared config sets the deprecated "recommended": false, which beats "preset"; this
+            // keeps the recommended rules on until the package moves to "preset", as agent-control does.
+            "recommended": true,
+            "complexity": {
+                // Arrow functions only, StackOne-wide; the shared set doesn't carry it yet.
+                "useArrowFunction": "error"
+            }
+        }
+    },
+    "overrides": [
+        {
+            // The repo's own scripts print what they find.
+            "includes": ["scripts/**"],
+            "linter": {
+                "rules": {
+                    "suspicious": {
+                        "noConsole": "off"
+                    }
+                }
+            }
+        }
+    ]
+}
