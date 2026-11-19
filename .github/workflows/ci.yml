@@ -61,11 +61,11 @@ jobs:
           fi
 
       # stack-nudge compares version strings to decide there's an update, so a changed extension
-      # that keeps its version reaches nobody who already has it.
+      # that keeps its version reaches nobody who already has it. The full-history checkout already
+      # has the base branch, so nothing is fetched here: with no credentials left behind, a fetch
+      # from a private repo would fail.
       - name: check extension versions
         if: github.event_name == 'pull_request'
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: |
-          git fetch --no-tags origin "$BASE_REF"
-          ./scripts/check-extension-versions.sh "origin/$BASE_REF"
+        run: ./scripts/check-extension-versions.sh "origin/$BASE_REF"
