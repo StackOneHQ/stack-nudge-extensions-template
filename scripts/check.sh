@@ -71,7 +71,7 @@ run_part() {
       fi
       scripts/check-extension-versions.sh "$BASE"
       ;;
-    script-specs) pnpm exec vitest run --project workflow-pins ;;
+    script-specs) pnpm exec vitest run --project workflow-pins --project release-notes ;;
     workflow-pins) node scripts/check-workflows.mjs ;;
     shellcheck)
       if ! command -v shellcheck >/dev/null 2>&1; then

@@ -8,6 +8,15 @@ export default defineConfig({
         projects: [
             {
                 test: {
+                    name: 'release-notes',
+                    environment: 'node',
+                    globals: true,
+                    include: ['scripts/specs/release-notes.spec.mjs'],
+                    testTimeout: 20_000,
+                },
+            },
+            {
+                test: {
                     name: 'workflow-pins',
                     environment: 'node',
                     globals: true,

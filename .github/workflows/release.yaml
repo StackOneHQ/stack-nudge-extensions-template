@@ -2,11 +2,12 @@ name: release
 
 # Publishes every extension on main as a GitHub release: one tarball and .sha256 per extension,
 # plus extensions-index.json. stack-nudge reads the index from the newest release, the same layout
-# its own release uses, so it has to stay "latest". The runner's own python3 runs the tests.
+# its own release uses, so it has to stay "latest". The runner's own python3 runs the tests and
+# its node writes the notes.
 #
-# Never in the template itself. It belongs to StackOneHQ, and stack-nudge lets a StackOneHQ repo's
-# index grant tiers up to trusted, so a published example would be a live catalogue nobody reviews
-# as one. A repository made from the template isn't a template, so its releases run.
+# Never in the template itself: a published example would be a live catalogue anyone could point
+# stack-nudge at, offering an extension nobody reviews as one. A repository made from the template
+# isn't a template, so its releases run.
 
 on:
   push:
@@ -14,6 +15,7 @@ on:
     paths:
       - "extensions/**"
       - "scripts/package-extensions.sh"
+      - "scripts/release-notes.mjs"
   workflow_dispatch:
 
 permissions:
@@ -53,6 +55,19 @@ jobs:
       - name: Package
         if: steps.any.outputs.publish == 'true'
         run: ./scripts/package-extensions.sh package dist/extensions
+      # Every extension in this release with its version and tier, marked new or updated against
+      # the latest release's index, which is downloaded first. No previous release, or one without
+      # an index, lists everything as new.
+      - name: Release notes
+        if: steps.any.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download --repo "$GITHUB_REPOSITORY" --pattern extensions-index.json \
+            --dir dist/previous 2>/dev/null || echo "No previous release index."
+          node scripts/release-notes.mjs dist/extensions/extensions-index.json \
+            dist/previous/extensions-index.json "${GITHUB_SHA::7}" > dist/release-notes.md
+          cat dist/release-notes.md
       - name: Publish
         if: steps.any.outputs.publish == 'true'
         env:
@@ -63,7 +78,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Extensions ${{ github.run_number }}" \
-            --notes "Extensions as of ${GITHUB_SHA::7}. See each extension's manifest.json for its version." \
+            --notes-file dist/release-notes.md \
             --latest \
             dist/extensions/extensions-index.json \
             dist/extensions/*.tar.gz \
