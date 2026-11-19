@@ -62,8 +62,9 @@ the rest. Its installed extensions keep their tiers until a later fetch reaches 
   `check-extension-versions.sh` are copied from stack-nudge, `check-workflows.mjs` from
   StackOne's agent-control.
 - `vendor/`: stack-nudge's manifest enum, which the packager reads for the known capabilities.
-- `.github/workflows/`: `ci.yml` runs the checks on every pull request, `release.yaml`
-  publishes on every merge that changes an extension.
+- `.github/workflows/`: `ci.yml` checks the PR title and validates, tests and version-checks the
+  extensions on every pull request, `release.yaml` publishes on every merge that changes an
+  extension.
 
 ## What you need
 

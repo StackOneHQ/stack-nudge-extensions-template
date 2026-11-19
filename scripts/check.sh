@@ -7,10 +7,10 @@
 #                                       main by default
 #   scripts/check.sh --list             names the parts that would run, one a line, and runs none
 #
-# Each part runs on its own, CI included (.github/workflows/ci.yml). lint is Biome over the scripts
-# and the JSON, so it needs `pnpm install` first. shellcheck and actionlint are skipped, saying so,
-# when they aren't installed. A failing part prints the end of its log; the full logs are kept in the
-# directory named at the end.
+# Each part runs on its own; CI (.github/workflows/ci.yml) runs the extension parts. lint is Biome
+# over the scripts and the JSON, so it needs `pnpm install` first. shellcheck and actionlint are
+# skipped, saying so, when they aren't installed. A failing part prints the end of its log; the
+# full logs are kept in the directory named at the end.
 set -uo pipefail
 
 BASE="main"

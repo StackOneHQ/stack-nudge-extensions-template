@@ -18,7 +18,8 @@ or fixed forward.
 - `pnpm install` turns on the `pre-commit` hook in `.githooks/`, which formats staged JSON and
   scripts with Biome.
 
-Pull requests squash, so the PR title becomes the commit on `main`.
+Pull requests squash, so the PR title becomes the commit on `main`. CI checks it's a
+Conventional Commit, `type: subject` or `type(scope): subject`, with any scope or none.
 
 ## Adding an extension
 
