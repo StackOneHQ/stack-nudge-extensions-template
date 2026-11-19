@@ -68,6 +68,7 @@ rather than the manifest. Anything not listed is `view`. A service extension (`"
 `"mode": "service"`) needs `service`, and signals or hardware capabilities need `trusted`. Say in
 the pull request why it needs more than `view`.
 
-stack-nudge caps what a repo can grant by who owns it: only a StackOneHQ repo gets above `view`,
-whatever `tiers.json` says. Anywhere else, list a tier only to record the review; it takes effect
-if the extension moves to a StackOneHQ catalogue.
+stack-nudge caps what a repo can grant with a list of catalogues compiled into the app: only those
+get above `view`, whatever `tiers.json` says, and owning the repo isn't enough. Anywhere else, list
+a tier only to record the review; it takes effect if the extension moves to a catalogue on that
+list.
