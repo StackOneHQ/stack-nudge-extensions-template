@@ -6,6 +6,9 @@ Read `README.md` first for the layout and what stack-nudge reads from a release.
 - Everything under `extensions/` is packaged and shipped to Macs, so nothing else goes in it.
 - StackOneHQ/stack-nudge's `docs/extensions.md` is the extension spec. Don't invent manifest
   fields.
+- `.claude/skills/` has skills for building, trying and reviewing an extension. Keep
+  `new-extension/references/extension-spec.md` in step with stack-nudge's docs; it names the
+  commit it was taken from.
 - Any change to an extension directory, tests included, bumps `version` in its manifest. The
   host only offers an update when the version string changes.
 - What an extension newly reads or sends goes in PRIVACY.md in the same commit.
